@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="ko">
+<head><script>document.documentElement.classList.add('js');setTimeout(function(){if(document.querySelector('.reveal.in'))return;document.querySelectorAll('.reveal,.lane,#prio').forEach(function(e){e.classList.add('in','in-view')})},2500);</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Loops &amp; Graphs: 마지막 한 단계만 승인하기</title>
+<style>
+:root{
+  --bg:#fff; --bg2:#f5f5f7; --fg:#1d1d1f; --muted:#6e6e73; --line:rgba(0,0,0,.1);
+  --dbg:#000; --dfg:#f5f5f7; --dmuted:#a1a1a6; --dline:rgba(255,255,255,.14);
+  --blue:#0071e3; --blue2:#2997ff; --green:#30d158; --red:#ff453a; --orange:#ff9f0a; --purple:#bf5af2;
+  --card:#fff; --dcard:#1c1c1e;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Apple SD Gothic Neo","Pretendard","Helvetica Neue","Noto Sans KR",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#000;--bg2:#0b0b0c;--fg:#f5f5f7;--muted:#a1a1a6;--line:rgba(255,255,255,.12);--card:#1c1c1e;--dbg:#161617;--dcard:#242426}
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--fg);line-height:1.5;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-x:hidden}
+a{color:var(--blue2);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:.9em}
+
+/* header */
+header.top{position:sticky;top:0;z-index:50;background:rgba(251,251,253,.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+@media (prefers-color-scheme:dark){header.top{background:rgba(22,22,23,.72)}}
+.top-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:20px;height:52px;padding:0 20px}
+.brand{font-weight:600;font-size:17px;letter-spacing:-.02em;white-space:nowrap;color:var(--fg)}
+nav.sec{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1;justify-content:flex-end;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12px,#000 calc(100% - 12px),transparent)}
+nav.sec::-webkit-scrollbar{display:none}
+nav.sec a{font-size:12px;color:var(--muted);padding:6px 10px;border-radius:980px;white-space:nowrap;transition:background .3s,color .3s}
+nav.sec a:hover{text-decoration:none;color:var(--fg)}
+nav.sec a.active{background:var(--fg);color:var(--bg)}
+.progress{position:absolute;left:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--blue2),var(--purple));width:0;transition:width .1s linear}
+
+/* sections */
+section{padding:120px 22px;position:relative;scroll-margin-top:52px}
+section.dark{background:var(--dbg);color:var(--dfg)}
+section.dark .muted,section.dark .lead{color:var(--dmuted)}
+section.alt{background:var(--bg2)}
+.wrap{max-width:980px;margin:0 auto}
+.eyebrow{font-size:17px;font-weight:600;color:var(--orange);margin-bottom:10px;letter-spacing:-.01em}
+.eyebrow.b{color:var(--blue2)} .eyebrow.g{color:var(--green)} .eyebrow.p{color:var(--purple)} .eyebrow.r{color:var(--red)}
+h1,h2{font-weight:700;letter-spacing:-.035em;line-height:1.08}
+h2{font-size:clamp(36px,6.4vw,72px);margin-bottom:22px}
+h3{font-size:clamp(21px,2.4vw,28px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:10px}
+.lead{font-size:clamp(19px,2.2vw,24px);color:var(--muted);max-width:760px;line-height:1.45;font-weight:500;letter-spacing:-.01em}
+.muted{color:var(--muted)}
+.grad{background:linear-gradient(90deg,#2997ff,#bf5af2 55%,#ff375f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad-g{background:linear-gradient(90deg,#30d158,#64d2ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* hero */
+.hero{min-height:calc(100vh - 52px);min-height:calc(100svh - 52px);display:flex;align-items:center;text-align:center;background:radial-gradient(1200px 600px at 50% 110%,rgba(41,151,255,.25),transparent 60%),radial-gradient(800px 400px at 80% 0%,rgba(191,90,242,.18),transparent 60%),#000;color:#f5f5f7;overflow:hidden}
+.hero h1{font-size:clamp(46px,9vw,112px);margin:14px 0 26px}
+.hero .lead{margin:0 auto;color:#a1a1a6}
+.hero .pill{display:inline-block;font-size:13px;color:#a1a1a6;border:1px solid rgba(255,255,255,.18);padding:6px 14px;border-radius:980px}
+.cta{display:inline-flex;gap:12px;margin-top:40px;flex-wrap:wrap;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:17px;padding:12px 22px;border-radius:980px;border:0;cursor:pointer;background:var(--blue);color:#fff;transition:transform .2s var(--ease),background .2s}
+.btn:hover{text-decoration:none;background:#0077ed}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--blue2);box-shadow:inset 0 0 0 1px currentColor}
+.scroll-hint{margin-top:70px;font-size:12px;color:#6e6e73;animation:bob 2s var(--ease) infinite}
+@keyframes bob{50%{transform:translateY(6px)}}
+
+/* reveal */
+.js .reveal{opacity:0;transform:translateY(40px)}.reveal{transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.js .reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}
+
+/* grid / cards */
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+@media (max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}}
+@media (max-width:640px){.g2,.g4{grid-template-columns:1fr} section{padding:88px 20px}}
+.card{background:var(--card);border-radius:28px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+section.alt .card{box-shadow:none}
+section.dark .card{background:var(--dcard);box-shadow:none}
+.card p{color:var(--muted);font-size:16px}
+section.dark .card p{color:var(--dmuted)}
+.card ul{list-style:none;margin-top:14px}
+.card li{padding:10px 0;border-top:1px solid var(--line);font-size:16px;display:flex;gap:10px;align-items:flex-start}
+section.dark .card li{border-color:var(--dline)}
+.card li:first-child{border-top:0}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;padding:4px 10px;border-radius:980px;margin-bottom:14px}
+.tag.g{background:rgba(48,209,88,.15);color:var(--green)} .tag.r{background:rgba(255,69,58,.15);color:var(--red)}
+.tag.b{background:rgba(41,151,255,.15);color:var(--blue2)} .tag.o{background:rgba(255,159,10,.15);color:var(--orange)} .tag.p{background:rgba(191,90,242,.15);color:var(--purple)}
+.ok{color:var(--green);font-weight:700;flex:none} .no{color:var(--red);font-weight:700;flex:none}
+.stage{margin:56px 0;display:flex;justify-content:center}
+.stage svg{width:100%;height:auto;max-width:860px;overflow:visible}
+.note{font-size:15px;color:var(--muted);text-align:center;margin-top:12px}
+section.dark .note{color:var(--dmuted)}
+.big-quote{font-size:clamp(26px,4vw,44px);font-weight:700;letter-spacing:-.03em;line-height:1.2;margin:64px auto 0;max-width:820px;text-align:center}
+.spacer{height:56px}
+
+/* svg common */
+.n-rect{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+section.dark .n-rect{fill:#1c1c1e;stroke:rgba(255,255,255,.16)}
+.n-txt{font-family:var(--font);font-size:15px;font-weight:600;fill:currentColor;text-anchor:middle;dominant-baseline:central}
+.n-sub{font-family:var(--font);font-size:11px;fill:var(--muted);text-anchor:middle;dominant-baseline:central}
+section.dark .n-sub{fill:var(--dmuted)}
+
+/* loop */
+#loopSvg .ring{fill:none;stroke:rgba(255,255,255,.12);stroke-width:2}
+#loopSvg .ringP{fill:none;stroke:url(#lg1);stroke-width:3;stroke-linecap:round}
+#loopSvg .st circle{fill:#1c1c1e;stroke:rgba(255,255,255,.2);stroke-width:1.5;transition:fill .4s,stroke .4s}
+#loopSvg .st.on circle{stroke:#2997ff}
+#loopSvg .st.red circle{fill:rgba(255,69,58,.2);stroke:var(--red)}
+#loopSvg .st.green circle{fill:rgba(48,209,88,.2);stroke:var(--green)}
+#loopSvg .center{font-family:var(--font);text-anchor:middle;dominant-baseline:central;fill:#f5f5f7}
+#loopDot{fill:#fff;filter:drop-shadow(0 0 8px #2997ff)}
+.status-pill{display:inline-block;font-family:var(--mono);font-size:14px;padding:6px 14px;border-radius:980px;background:#1c1c1e;color:#a1a1a6;transition:all .4s}
+.status-pill.red{background:rgba(255,69,58,.18);color:var(--red)} .status-pill.green{background:rgba(48,209,88,.18);color:var(--green)}
+
+/* dag */
+.dag-ctl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.seg{display:inline-flex;background:var(--bg2);border-radius:980px;padding:4px}
+section.alt .seg{background:rgba(0,0,0,.06)}
+@media (prefers-color-scheme:dark){section.alt .seg{background:rgba(255,255,255,.08)}}
+.seg button{white-space:nowrap;font:inherit;font-size:14px;border:0;background:transparent;color:var(--muted);padding:8px 16px;border-radius:980px;cursor:pointer;transition:all .3s}
+.seg button.on{background:var(--card);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+#dagSvg .edge{fill:none;stroke:var(--muted);stroke-width:2;transition:stroke .4s,opacity .4s}
+#dagSvg .edge.fake{stroke:var(--red);stroke-dasharray:6 6;animation:dash 1s linear infinite}
+#dagSvg .elabel{font-family:var(--font);font-size:12px;font-weight:600;fill:var(--red);text-anchor:middle;transition:opacity .4s}
+#dagSvg .vlabel{font-family:var(--mono);font-size:11px;fill:var(--blue);text-anchor:middle}
+@keyframes dash{to{stroke-dashoffset:-24}}
+.timebar{max-width:620px;margin:26px auto 0;font-size:14px;color:var(--muted)}
+.timebar .row{display:flex;align-items:center;gap:12px;margin:8px 0}
+.timebar .row span{width:70px;flex:none}
+.timebar .bar{height:10px;border-radius:10px;background:linear-gradient(90deg,var(--blue2),var(--purple));transition:width 1s var(--ease)}
+.test-box{margin-top:56px;border-radius:28px;padding:40px;background:linear-gradient(135deg,rgba(41,151,255,.1),rgba(191,90,242,.1));text-align:center}
+.test-box .q{font-size:clamp(24px,3.6vw,40px);font-weight:700;letter-spacing:-.03em;line-height:1.2}
+.test-box p{color:var(--muted);margin-top:12px;font-size:17px}
+
+/* node types */
+.icon{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;margin-bottom:20px}
+.icon svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.i1{background:linear-gradient(135deg,#ff9f0a,#ff375f)} .i2{background:linear-gradient(135deg,#2997ff,#5e5ce6)} .i3{background:linear-gradient(135deg,#30d158,#0a84ff)} .i4{background:linear-gradient(135deg,#bf5af2,#ff375f)}
+.card .k{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.callout{margin-top:28px;border-radius:24px;padding:28px 32px;background:var(--card);display:flex;gap:18px;align-items:flex-start}
+section.alt .callout{background:var(--card)}
+.callout b{font-size:20px;letter-spacing:-.02em}
+.callout .emoji{font-size:30px;line-height:1}
+.ctx-demo{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+.ctx{width:120px;height:90px;border-radius:18px;background:var(--card);display:grid;place-items:center;font-size:13px;color:var(--muted);position:relative;border:1px dashed var(--line)}
+.ctx b{display:block;color:var(--fg);font-size:15px}
+
+/* nested */
+#nestSvg .mini{transform-box:fill-box;transform-origin:center;animation:spin 2.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#nestSvg .gedge{stroke:#2997ff;stroke-width:2.5;fill:none;stroke-dasharray:8 8;animation:dash 1.2s linear infinite}
+
+/* return paths */
+#retSvg .flow{fill:none;stroke-width:3;stroke-dasharray:10 10;animation:dash 1s linear infinite}
+#retSvg .corr{stroke:var(--red)} #retSvg .learn{stroke:var(--green);animation-duration:2.2s}
+#retSvg .fwd{fill:none;stroke:var(--muted);stroke-width:2}
+.mono-block{font-family:var(--mono);font-size:14px;line-height:1.9;background:#1c1c1e;color:#f5f5f7;border-radius:20px;padding:24px 26px;overflow-x:auto;white-space:pre}
+.mono-block .k1{color:#64d2ff}.mono-block .k2{color:#30d158}.mono-block .k3{color:#ff9f0a}.mono-block .kr{color:#ff453a}
+
+/* slices */
+.slices{display:flex;flex-direction:column;gap:12px;max-width:720px;margin:56px auto 0;position:relative}
+.slice-row{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;gap:10px}
+.slice{padding:16px 18px;border-radius:16px;background:var(--card);font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center;transition:transform 1s var(--ease),background .5s,color .5s,box-shadow .5s;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.slice small{font-family:var(--mono);font-weight:500;font-size:12px;color:var(--muted)}
+.slice.go{transform:translateX(calc(100% + 80px))}
+.slice.red{background:rgba(255,69,58,.14);color:var(--red);box-shadow:0 0 0 2px var(--red)}
+.slice.green{background:rgba(48,209,88,.14);color:var(--green)}
+.gate-col{height:100%;display:grid;place-items:center;font-size:12px;color:var(--muted);text-align:center}
+.slice-dest{border:2px dashed var(--line);border-radius:16px;height:100%;min-height:52px}
+.attempts{text-align:center;margin-top:22px;font-family:var(--mono);font-size:14px;color:var(--muted)}
+.attempts i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--line);margin:0 3px;vertical-align:middle;transition:background .3s}
+.attempts i.on{background:var(--orange)}
+@media (max-width:640px){.slice-row{grid-template-columns:1fr 34px 1fr}.slice{font-size:13px;padding:12px}.slice small{display:none}.slice.go{transform:translateX(calc(100% + 54px))}}
+
+/* lanes */
+.lane{border-radius:28px;padding:32px;background:var(--dcard);position:relative;overflow:hidden}
+.gate-vis{height:120px;border-radius:18px;background:#0e0e10;margin-bottom:22px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.gate-vis .bars{position:absolute;inset:0;display:flex;justify-content:space-evenly;transition:transform 1.2s var(--ease)}
+.gate-vis .bars i{width:6px;background:rgba(255,255,255,.25);border-radius:3px}
+.lane.open.in-view .bars{transform:translateY(-100%)}
+.lane.cond.in-view .bars{transform:translateY(-55%)}
+.gate-vis .tok{width:22px;height:22px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green);position:absolute;left:-30px;top:50%;margin-top:-11px}
+.lane.open.in-view .tok{animation:pass 2.6s 1.2s var(--ease) infinite}
+.lane.cond.in-view .tok{background:var(--orange);box-shadow:0 0 16px var(--orange);animation:passCheck 3.4s 1.2s var(--ease) infinite}
+.lane.closed .tok{background:var(--red);box-shadow:0 0 16px var(--red)}
+.lane.closed.in-view .tok{animation:blocked 2.6s 1s var(--ease) infinite}
+@keyframes pass{0%{left:-30px}100%{left:calc(100% + 30px)}}
+@keyframes passCheck{0%{left:-30px}35%,60%{left:calc(50% - 40px)}100%{left:calc(100% + 30px)}}
+@keyframes blocked{0%{left:-30px}45%,85%{left:calc(50% - 50px)}100%{left:-30px}}
+.lock{position:relative;z-index:2;font-size:34px}
+.lane.closed.in-view .lock{animation:shake 2.6s 1s infinite}
+@keyframes shake{40%,50%{transform:rotate(0)}43%{transform:rotate(-12deg)}46%{transform:rotate(12deg)}}
+.lane h3{color:#f5f5f7}.lane p{color:var(--dmuted);font-size:16px}
+.lane .ex{margin-top:14px;font-size:14px;color:#86868b}
+.prio{max-width:720px;margin:64px auto 0}
+.prio .p-row{display:grid;grid-template-columns:28px 1fr;gap:14px;align-items:center;margin:14px 0}
+.prio .num{font-weight:700;color:var(--dmuted)}
+.prio .pbar{height:44px;border-radius:12px;display:flex;align-items:center;padding:0 16px;font-weight:600;font-size:15px;color:#fff;width:0;transition:width 1.2s var(--ease);white-space:nowrap;overflow:hidden}
+.prio.in .pbar{width:var(--w)}
+
+/* toolkit */
+.tk{margin-top:28px}
+.tk-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.tk-head h3{margin:0}
+.copy{font:inherit;font-size:14px;font-weight:600;border:0;border-radius:980px;padding:8px 16px;background:var(--blue);color:#fff;cursor:pointer;transition:background .3s,transform .15s;flex:none}
+.copy:active{transform:scale(.96)}
+.copy.done{background:var(--green)}
+pre.code{font-family:var(--mono);font-size:13.5px;line-height:1.7;background:#1c1c1e;color:#f5f5f7;border-radius:20px;padding:24px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;max-height:460px}
+.tabs{display:flex;gap:6px;flex-wrap:nowrap;scrollbar-width:none;margin-top:40px;position:sticky;top:60px;z-index:5;padding:6px;background:rgba(245,245,247,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:980px;width:max-content;max-width:100%;overflow-x:auto}
+@media (prefers-color-scheme:dark){.tabs{background:rgba(28,28,30,.8)}}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;font:inherit;font-size:14px;font-weight:600;border:0;background:transparent;color:var(--muted);padding:8px 16px;border-radius:980px;cursor:pointer;white-space:nowrap}
+.tabs button.on{background:var(--fg);color:var(--bg)}
+.panel{display:none;animation:fade .5s var(--ease)}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}}
+.check-list{list-style:none;background:var(--card);border-radius:24px;padding:8px 24px}
+.check-list li{border-top:1px solid var(--line)}
+.check-list li:first-child{border-top:0}
+.check-list label{display:flex;gap:14px;align-items:flex-start;padding:16px 0;cursor:pointer;font-size:16px}
+.check-list input{appearance:none;-webkit-appearance:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--muted);flex:none;margin-top:1px;display:grid;place-items:center;transition:all .25s;cursor:pointer}
+.check-list input:checked{background:var(--green);border-color:var(--green)}
+.check-list input:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.check-list input:checked + span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.check-list small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.cl-meta{display:flex;align-items:center;gap:16px;margin:14px 0 18px;flex-wrap:wrap}
+.cl-bar{flex:1;min-width:160px;height:8px;border-radius:8px;background:var(--line);overflow:hidden}
+.cl-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),#64d2ff);transition:width .5s var(--ease)}
+.linkbtn{font:inherit;font-size:14px;background:none;border:0;color:var(--blue2);cursor:pointer}
+
+/* steps */
+.steps{counter-reset:s;max-width:820px;margin:56px auto 0;position:relative}
+.steps::before{content:"";position:absolute;left:27px;top:20px;bottom:20px;width:2px;background:linear-gradient(var(--blue2),var(--purple),var(--green))}
+.step{display:grid;grid-template-columns:56px 1fr;gap:22px;padding:18px 0;align-items:start}
+.step .dot{width:56px;height:56px;border-radius:50%;background:var(--bg);border:2px solid var(--blue2);display:grid;place-items:center;font-weight:700;font-size:20px;position:relative;z-index:1}
+section.dark .step .dot{background:var(--dbg)}
+.step h3{margin-top:12px}
+.step p{color:var(--muted);font-size:17px}
+section.dark .step p{color:var(--dmuted)}
+.closing{text-align:center;margin-top:110px}
+.closing p{font-size:clamp(28px,5vw,56px);font-weight:700;letter-spacing:-.035em;line-height:1.18}
+.closing p + p{margin-top:8px}
+
+footer{padding:40px 22px 60px;background:var(--bg2);color:var(--muted);font-size:12px;text-align:center;line-height:1.8}
+footer .wrap{border-top:1px solid var(--line);padding-top:24px}
+
+.toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);background:rgba(29,29,31,.92);color:#fff;padding:12px 20px;border-radius:980px;font-size:14px;opacity:0;pointer-events:none;transition:all .35s var(--ease);z-index:99;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+  .prio .pbar{width:var(--w)}
+  .lane.open .bars{transform:translateY(-100%)}
+  .lane.cond .bars{transform:translateY(-55%)}
+  .gate-vis .tok{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="#hero">Loops &amp; Graphs</a>
+    <nav class="sec" id="secNav">
+      <a href="#loop">Loop</a>
+      <a href="#graph">Graph</a>
+      <a href="#nodes">노드 4종</a>
+      <a href="#nested">중첩</a>
+      <a href="#returns">되돌림</a>
+      <a href="#unit">단위 반환</a>
+      <a href="#gate">게이트</a>
+      <a href="#toolkit">실무 키트</a>
+      <a href="#build">적용 순서</a>
+    </nav>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<main>
+<!-- 1 HERO -->
+<section class="hero" id="hero">
+  <div class="wrap">
+    <span class="pill reveal">Hanako · “Loops and Graphs” 실무 가이드</span>
+    <h1 class="reveal d1">에이전트 감시는 그만.<br><span class="grad">마지막 한 단계만</span><br>승인한다.</h1>
+    <p class="lead reveal d2">중간 결과를 사람이 하나하나 검토하지 않아요. 품질은 <b style="color:#f5f5f7">실패할 수 있는 체크(Loop)</b>와 <b style="color:#f5f5f7">작업 구조(Graph)</b>가 맡고, 사람은 되돌리기 가장 어렵고 영향이 가장 큰 한 단계에만 들어가요.</p>
+    <div class="cta reveal d3">
+      <a class="btn" href="#toolkit">실무 키트 바로 가기</a>
+      <a class="btn ghost" href="#loop">처음부터 읽기</a>
+    </div>
+    <div class="scroll-hint">↓ 스크롤</div>
+  </div>
+</section>
+
+<!-- 2 LOOP -->
+<section class="dark" id="loop">
+  <div class="wrap">
+    <p class="eyebrow b reveal">01 · Loop</p>
+    <h2 class="reveal">Loop는<br>실패할 수 있는 체크예요.</h2>
+    <p class="lead reveal">생성하고, 체크하고, 고치고, 체크가 GREEN이 될 때까지 반복해요. 핵심은 <b style="color:#f5f5f7">체크를 작업보다 먼저 쓰는 것</b>이에요. 프로그램이 판정할 수 있어야 해요.</p>
+
+    <div class="stage reveal">
+      <svg id="loopSvg" viewBox="0 0 520 440" role="img" aria-label="생성, 체크, 수정, 반복으로 이어지는 루프. 첫 체크는 빨강, 수정 후 두 번째 체크는 초록">
+        <defs><linearGradient id="lg1" x1="0" x2="1"><stop offset="0" stop-color="#2997ff"/><stop offset="1" stop-color="#bf5af2"/></linearGradient></defs>
+        <circle class="ring" cx="260" cy="220" r="160"/>
+        <circle class="ringP" id="ringP" cx="260" cy="220" r="160" stroke-dasharray="0 1006" transform="rotate(-90 260 220)"/>
+        <g class="st" id="stP" transform="translate(260 60)"><circle r="44"/><text class="n-txt" y="-6" style="fill:#f5f5f7">생성</text><text class="n-sub" y="14">produce</text></g>
+        <g class="st" id="stC" transform="translate(420 220)"><circle r="44"/><text class="n-txt" y="-6" style="fill:#f5f5f7">체크</text><text class="n-sub" y="14">check</text></g>
+        <g class="st" id="stF" transform="translate(260 380)"><circle r="44"/><text class="n-txt" y="-6" style="fill:#f5f5f7">수정</text><text class="n-sub" y="14">correct</text></g>
+        <g class="st" id="stR" transform="translate(100 220)"><circle r="44"/><text class="n-txt" y="-6" style="fill:#f5f5f7">반복</text><text class="n-sub" y="14">repeat</text></g>
+        <text class="center" x="260" y="205" font-size="14" fill="#a1a1a6" style="fill:#a1a1a6">현재 체크</text>
+        <text class="center" id="loopCenter" x="260" y="235" font-size="26" font-weight="700">대기</text>
+        <circle id="loopDot" r="8" cx="260" cy="60"/>
+      </svg>
+    </div>
+    <p class="note reveal"><span class="status-pill" id="loopStatus">$ npm test → 대기</span></p>
+
+    <div class="spacer"></div>
+    <div class="grid g2">
+      <div class="card reveal">
+        <span class="tag g">GREEN · 체크다</span>
+        <h3>프로그램이 판정해요</h3>
+        <ul>
+          <li><span class="ok">✓</span><span>테스트 스위트가 <code>exit 0</code></span></li>
+          <li><span class="ok">✓</span><span>모든 주장에 출처(<code>파일:라인</code>)가 붙어 있음</span></li>
+          <li><span class="ok">✓</span><span>diff가 계획에 적힌 파일만 건드림</span></li>
+        </ul>
+      </div>
+      <div class="card reveal d1">
+        <span class="tag r">NOT A CHECK · 체크가 아니다</span>
+        <h3>느낌이에요</h3>
+        <ul>
+          <li><span class="no">✕</span><span>“결과가 괜찮아 보인다”</span></li>
+          <li><span class="no">✕</span><span>“모델이 자신 있다고 한다”</span></li>
+          <li><span class="no">✕</span><span>“에러가 안 났다”: 에러가 없다고 정답은 아니에요</span></li>
+          <li><span class="no">✕</span><span>다른 모델에게 “검토해줘”만 시키기: 낙관론자 둘의 합의일 뿐이에요</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 GRAPH -->
+<section class="alt" id="graph">
+  <div class="wrap">
+    <p class="eyebrow p reveal">02 · Graph</p>
+    <h2 class="reveal">“그리고 나서”는<br>엣지가 아니에요.</h2>
+    <p class="lead reveal">Graph는 어떤 작업 단위가 있고 어떻게 연결되는지를 정해요. 노드는 입력 하나, 출력 하나인 제한된 작업이에요. 엣지는 이 노드의 출력이 저 노드의 입력으로 <b style="color:var(--fg)">실제로 들어갈 때만</b> 있어요.</p>
+
+    <div class="stage reveal" style="flex-direction:column;align-items:center">
+      <svg id="dagSvg" viewBox="0 0 780 320" role="img" aria-label="직렬 체인에서 가짜 엣지를 제거하면 병렬 그래프가 되는 다이어그램"></svg>
+      <div class="dag-ctl">
+        <div class="seg" role="tablist" aria-label="그래프 단계">
+          <button class="on" data-dag="0">① 직렬</button>
+          <button data-dag="1">② 가짜 엣지</button>
+          <button data-dag="2">③ 병렬화</button>
+        </div>
+      </div>
+      <div class="timebar">
+        <div class="row"><span>소요 시간</span><div class="bar" id="timeBar" style="width:100%"></div></div>
+        <div class="row"><span></span><small id="timeTxt">워커 3개가 차례로 돌아요: 3 단위 시간</small></div>
+      </div>
+    </div>
+
+    <div class="test-box reveal">
+      <div class="q">“넘어가는 변수의 이름을<br>댈 수 있나요?”</div>
+      <p>화살표마다 물어보세요. 다음 단계가 이전 단계의 출력을 실제로 읽나요?<br>넘어가는 변수를 이름으로 댈 수 없으면 엣지가 없는 거예요. 그 둘은 병렬로 돌리면 돼요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4 NODE TYPES -->
+<section id="nodes">
+  <div class="wrap">
+    <p class="eyebrow reveal">03 · 노드 4종</p>
+    <h2 class="reveal">모든 파이프라인은<br>네 가지 노드로 그려요.</h2>
+    <div class="spacer"></div>
+    <div class="grid g4">
+      <div class="card reveal" style="background:var(--bg2)">
+        <div class="icon i1"><svg viewBox="0 0 24 24"><path d="M12 3v6M12 9l-6 6M12 9l6 6M12 9v12"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></div>
+        <div class="k">Splitter</div><h3>분할</h3>
+        <p>맨 앞에서 작업을 잘라요. 가장 중요한 결정이에요. 폴더 기준이 아니라 <b style="color:var(--fg)">영향 범위(blast radius)</b> 기준으로 잘라요.</p>
+      </div>
+      <div class="card reveal d1" style="background:var(--bg2)">
+        <div class="icon i2"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 12h6M12 9v6"/></svg></div>
+        <div class="k">Worker</div><h3>작업자</h3>
+        <p>단위 하나, 관점 하나, <b style="color:var(--fg)">독립된 컨텍스트</b>. 컨텍스트를 공유시키면 결과가 한쪽으로 수렴해서 4번 비용을 내고 의견 1개를 얻어요.</p>
+      </div>
+      <div class="card reveal d2" style="background:var(--bg2)">
+        <div class="icon i3"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></div>
+        <div class="k">Code node</div><h3>코드</h3>
+        <p>병합, 정렬, 중복 제거, 전후 비교처럼 정답이 하나인 변환은 모델이 아니라 코드가 해요.</p>
+      </div>
+      <div class="card reveal d3" style="background:var(--bg2)">
+        <div class="icon i4"><svg viewBox="0 0 24 24"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-7h6v7"/></svg></div>
+        <div class="k">Gate</div><h3>관문</h3>
+        <p>결과를 통과시키거나 만든 단계로 되돌려요. 여는 기준은 자신감이 아니라 영향 범위예요.</p>
+      </div>
+    </div>
+
+    <div class="callout reveal" style="background:var(--bg2)">
+      <div class="emoji">🧪</div>
+      <div><b>코드 노드 판별법</b><p class="muted" style="margin-top:6px;font-size:17px">그 단계를 <b style="color:var(--fg)">“판단 / 결정 / 평가 / 요약”</b> 같은 단어 없이 설명할 수 있으면, 모델이 아니라 코드로 만들어요.</p></div>
+    </div>
+
+    <div class="reveal" style="margin-top:56px;text-align:center">
+      <h3>워커마다 컨텍스트를 따로 줘요</h3>
+      <p class="muted">같은 대화 안에서 서브태스크를 돌리지 말고, 서브에이전트를 각각 띄우세요.</p>
+      <div class="ctx-demo">
+        <div class="ctx"><div><b>Worker A</b>ctx A</div></div>
+        <div class="ctx"><div><b>Worker B</b>ctx B</div></div>
+        <div class="ctx"><div><b>Worker C</b>ctx C</div></div>
+        <div class="ctx"><div><b>Worker D</b>ctx D</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 NESTED -->
+<section class="dark" id="nested">
+  <div class="wrap" style="text-align:center">
+    <p class="eyebrow g reveal">04 · 원칙</p>
+    <h2 class="reveal">Loop는 노드 안에.<br><span class="grad-g">Graph는 노드 사이에.</span></h2>
+    <p class="lead reveal" style="margin:0 auto">각 노드는 안에서 자기 체크가 GREEN이 될 때까지 혼자 돌아요. 노드끼리는 실제로 넘어가는 출력으로만 이어져요.</p>
+    <div class="stage reveal">
+      <svg id="nestSvg" viewBox="0 0 760 260" role="img" aria-label="세 개의 노드 각각 안에서 작은 루프가 돌고, 노드 사이를 그래프 엣지가 잇는 다이어그램">
+        <defs><marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2997ff"/></marker></defs>
+        <path class="gedge" d="M215 130H285" marker-end="url(#arrB)"/>
+        <path class="gedge" d="M475 130H545" marker-end="url(#arrB)"/>
+        <g transform="translate(120 130)">
+          <rect x="-95" y="-95" width="190" height="190" rx="32" fill="#1c1c1e" stroke="rgba(255,255,255,.14)"/>
+          <circle r="42" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+          <g class="mini"><circle r="42" fill="none" stroke="#30d158" stroke-width="3" stroke-dasharray="40 224" stroke-linecap="round"/></g>
+          <text class="n-txt" y="0" style="fill:#f5f5f7;font-size:13px">loop</text>
+          <text class="n-txt" y="70" style="fill:#f5f5f7">Worker A</text>
+        </g>
+        <g transform="translate(380 130)">
+          <rect x="-95" y="-95" width="190" height="190" rx="32" fill="#1c1c1e" stroke="rgba(255,255,255,.14)"/>
+          <circle r="42" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+          <g class="mini" style="animation-duration:1.8s"><circle r="42" fill="none" stroke="#30d158" stroke-width="3" stroke-dasharray="40 224" stroke-linecap="round"/></g>
+          <text class="n-txt" y="0" style="fill:#f5f5f7;font-size:13px">loop</text>
+          <text class="n-txt" y="70" style="fill:#f5f5f7">Merge (code)</text>
+        </g>
+        <g transform="translate(640 130)">
+          <rect x="-95" y="-95" width="190" height="190" rx="32" fill="#1c1c1e" stroke="rgba(255,255,255,.14)"/>
+          <circle r="42" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2"/>
+          <g class="mini" style="animation-duration:3s"><circle r="42" fill="none" stroke="#30d158" stroke-width="3" stroke-dasharray="40 224" stroke-linecap="round"/></g>
+          <text class="n-txt" y="0" style="fill:#f5f5f7;font-size:13px">loop</text>
+          <text class="n-txt" y="70" style="fill:#f5f5f7">Gate</text>
+        </g>
+      </svg>
+    </div>
+    <p class="note reveal">초록 호 = 노드 안의 loop · 파란 점선 = 노드 사이의 graph 엣지</p>
+  </div>
+</section>
+
+<!-- 6 RETURN PATHS -->
+<section id="returns">
+  <div class="wrap">
+    <p class="eyebrow r reveal">05 · 되돌림 경로</p>
+    <h2 class="reveal">되돌아가는 길은<br>두 개예요.</h2>
+    <p class="lead reveal">대부분은 짧은 길만 만들어요. 긴 길이 있어야 같은 실수가 다음 실행에서 다시 안 나와요.</p>
+    <div class="stage reveal">
+      <svg id="retSvg" viewBox="0 0 800 300" role="img" aria-label="게이트에서 워커로 가는 짧은 correction edge와, 통과된 결과에서 splitter로 가는 긴 learning edge">
+        <defs>
+          <marker id="aG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#30d158"/></marker>
+          <marker id="aR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ff453a"/></marker>
+          <marker id="aM" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#86868b"/></marker>
+        </defs>
+        <path class="fwd" d="M155 150H245" marker-end="url(#aM)"/>
+        <path class="fwd" d="M355 150H445" marker-end="url(#aM)"/>
+        <path class="fwd" d="M555 150H645" marker-end="url(#aM)"/>
+        <path class="flow corr" d="M500 190 C 480 250, 320 250, 300 192" marker-end="url(#aR)"/>
+        <path class="flow learn" d="M700 110 C 680 10, 120 10, 100 108" marker-end="url(#aG)"/>
+        <g transform="translate(100 150)"><rect class="n-rect" x="-55" y="-38" width="110" height="76" rx="18"/><text class="n-txt" y="-6">Splitter</text><text class="n-sub" y="14">브리프</text></g>
+        <g transform="translate(300 150)"><rect class="n-rect" x="-55" y="-38" width="110" height="76" rx="18"/><text class="n-txt" y="-6">Worker</text><text class="n-sub" y="14">단위 생성</text></g>
+        <g transform="translate(500 150)"><rect class="n-rect" x="-55" y="-38" width="110" height="76" rx="18"/><text class="n-txt" y="-6">Gate</text><text class="n-sub" y="14">통과/반려</text></g>
+        <g transform="translate(700 150)"><rect class="n-rect" x="-55" y="-38" width="110" height="76" rx="18"/><text class="n-txt" y="-6">Accepted</text><text class="n-sub" y="14">통과 결과</text></g>
+        <text x="400" y="272" text-anchor="middle" font-size="13" font-weight="600" fill="#ff453a" font-family="-apple-system,sans-serif">correction edge · 이번 실행을 고침</text>
+        <text x="400" y="66" text-anchor="middle" font-size="13" font-weight="600" fill="#30d158" font-family="-apple-system,sans-serif">learning edge · 이후 모든 실행을 고침</text>
+      </svg>
+    </div>
+    <div class="grid g2">
+      <div class="card reveal" style="background:var(--bg2)">
+        <span class="tag r">짧은 길 · Correction edge</span>
+        <h3>실패한 단위를 만든 단계로</h3>
+        <p>게이트가 실패한 단위를 그 단위를 만든 단계로 돌려보내요. <b style="color:var(--fg)">이번 실행</b>을 고쳐요.</p>
+      </div>
+      <div class="card reveal d1" style="background:var(--bg2)">
+        <span class="tag g">긴 길 · Learning edge</span>
+        <h3>통과 결과에서 뽑은 제약을 splitter로</h3>
+        <p>통과된 결과에서 <b style="color:var(--fg)">제약 조건</b>을 뽑아 splitter의 브리프에 넣어요. <b style="color:var(--fg)">이후 모든 실행</b>을 고쳐요. 대부분 이걸 빼먹어요.</p>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:28px">
+      <div class="mono-block"><span class="k2">ACCEPTED</span>   utils slice ported, green on first pass
+<span class="k1">DERIVED </span>   adapters preserve keyword args exactly
+<span class="k3">LANDS IN</span>   the splitter's brief for every later slice</div>
+      <p class="note">Claude Code에서는 이 DERIVED 한 줄을 CLAUDE.md의 “Learned constraints”에 쌓으면 돼요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7 UNIT -->
+<section class="alt" id="unit">
+  <div class="wrap">
+    <p class="eyebrow o reveal" style="color:var(--orange)">06 · 단위 반환</p>
+    <h2 class="reveal">배치 말고,<br>실패한 단위만 돌려보내요.</h2>
+    <p class="lead reveal">4개 중 1개가 실패했으면 그 1개만 돌려보내요. 전체를 돌려보내면 멀쩡했던 3개가 “다르게” 다시 써지고, 결과가 수렴하지 않아요.</p>
+
+    <div class="slices reveal" id="slices" aria-label="4개 단위 중 handlers만 빨강으로 반려되어 돌아갔다가 다시 통과하는 애니메이션">
+      <div class="slice-row"><div class="slice" data-i="0">utils <small>slice 1</small></div><div class="gate-col">→</div><div class="slice-dest"></div></div>
+      <div class="slice-row"><div class="slice" data-i="1">handlers <small>slice 2</small></div><div class="gate-col" id="gateMid">GATE</div><div class="slice-dest"></div></div>
+      <div class="slice-row"><div class="slice" data-i="2">adapters <small>slice 3</small></div><div class="gate-col">→</div><div class="slice-dest"></div></div>
+      <div class="slice-row"><div class="slice" data-i="3">models <small>slice 4</small></div><div class="gate-col">→</div><div class="slice-dest"></div></div>
+    </div>
+    <div class="attempts" id="attempts">handlers 재시도 <i></i><i></i><i></i> <span id="attTxt">0 / 3</span></div>
+
+    <div class="spacer"></div>
+    <div class="tk reveal">
+      <div class="tk-head"><h3>돌려보낼 때는 다섯 줄을 같이 보내요</h3><button class="copy" data-copy="tpl-return-mini">복사</button></div>
+<pre class="code" id="tpl-return-mini">UNIT      handlers slice
+VERDICT   red
+REASON    test_auth_redirect failed
+EVIDENCE  expected 302, got 200, handlers/auth.py:88
+SCOPE     fix this file only, do not touch other slices</pre>
+    </div>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card reveal"><span class="tag o">SCOPE가 없으면</span><h3>수정 범위가 번져요</h3><p>결국 아무도 리뷰하지 않은 거대한 diff가 돼요.</p></div>
+      <div class="card reveal d1"><span class="tag r">최대 3회</span><h3>세 번 실패하면 계획 문제예요</h3><p>단위 문제가 아니라 분할(splitter)이 잘못된 거예요. 사람에게 올려요.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 GATE -->
+<section class="dark" id="gate">
+  <div class="wrap">
+    <p class="eyebrow b reveal">07 · 게이트</p>
+    <h2 class="reveal">게이트는 자신감이 아니라<br>영향 범위로 열어요.</h2>
+    <p class="lead reveal">모델 점수가 아무리 높아도, 되돌리기 어려운 작업은 자동으로 통과시키지 않아요.</p>
+    <div class="spacer"></div>
+    <div class="grid g3">
+      <div class="lane open reveal">
+        <div class="gate-vis"><div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="tok"></div></div>
+        <span class="tag g">OPEN</span>
+        <h3>되돌리기 쉽고 국소적</h3>
+        <p>자동 통과해도 돼요.</p>
+        <p class="ex">문구 변경 · 테스트 · 커버리지 있는 독립 함수</p>
+      </div>
+      <div class="lane cond reveal d1">
+        <div class="gate-vis"><div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="tok"></div></div>
+        <span class="tag o">GATED</span>
+        <h3>되돌리기 쉽지만 넓음</h3>
+        <p>결정적 체크 통과와 깔끔한 실행 이력이 있을 때만 통과해요.</p>
+        <p class="ex">공용 유틸 · 스키마 추가 · 호출처 많은 코드</p>
+      </div>
+      <div class="lane closed reveal d2">
+        <div class="gate-vis"><div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="tok"></div><span class="lock">🔒</span></div>
+        <span class="tag r">CLOSED</span>
+        <h3>되돌리기 어려움</h3>
+        <p>절대 자동 통과하지 않아요. 점수와 상관없이 사람이 승인해요.</p>
+        <p class="ex">마이그레이션 · 삭제 · 프로덕션 데이터 · 돈 이동</p>
+      </div>
+    </div>
+
+    <div class="prio reveal" id="prio">
+      <h3 style="text-align:center;margin-bottom:24px">게이트가 믿는 근거, 우선순위 순</h3>
+      <div class="p-row"><span class="num">1</span><div class="pbar" style="--w:100%;background:linear-gradient(90deg,#30d158,#0a84ff)">결정적 결과 (테스트 등)</div></div>
+      <div class="p-row"><span class="num">2</span><div class="pbar" style="--w:78%;background:linear-gradient(90deg,#0a84ff,#5e5ce6)">이번 실행 경로</div></div>
+      <div class="p-row"><span class="num">3</span><div class="pbar" style="--w:56%;background:linear-gradient(90deg,#5e5ce6,#bf5af2)">이 노드의 과거 롤백 빈도</div></div>
+      <div class="p-row"><span class="num">4</span><div class="pbar" style="--w:34%;background:linear-gradient(90deg,#636366,#48484a)">모델 자기평가 (마지막)</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 TOOLKIT -->
+<section id="toolkit">
+  <div class="wrap">
+    <p class="eyebrow g reveal">08 · 실무 키트</p>
+    <h2 class="reveal">복사해서<br>바로 쓰세요.</h2>
+    <p class="lead reveal">Claude Code 같은 코딩 에이전트에 그대로 붙여 넣는 블록 3개와, 지금 돌리는 파이프라인을 점검하는 체크리스트예요.</p>
+
+    <div class="tabs reveal" role="tablist">
+      <button class="on" data-tab="p1">A · CLAUDE.md 규칙</button>
+      <button data-tab="p2">B · 작업 시작 프롬프트</button>
+      <button data-tab="p3">C · 반려/재시도</button>
+      <button data-tab="p4">D · 파이프라인 점검</button>
+    </div>
+
+    <div class="panel on tk" id="p1">
+      <div class="tk-head"><div><h3>CLAUDE.md 규칙 블록</h3><p class="muted" style="font-size:15px">프로젝트 루트 <code>CLAUDE.md</code>나 <code>~/.claude/CLAUDE.md</code>에 붙여 넣어요.</p></div><button class="copy" data-copy="tpl-claude">복사</button></div>
+<pre class="code" id="tpl-claude">## 에이전트 작업 규칙 (Loop + Graph)
+목표: 나는 중간 결과를 검토하지 않는다. 되돌리기 가장 어렵고 영향이 가장 큰 한 단계만 승인한다.
+
+1. 체크 먼저
+   - 작업 시작 전, 프로그램이 판정할 수 있는 완료 조건(GREEN 목록)을 먼저 써서 보여줄 것.
+     예) 테스트 exit 0 / 모든 주장에 파일:라인 출처 / diff가 계획에 적힌 파일만 변경
+   - "괜찮아 보임", "자신 있음", "에러 없음", "다른 모델이 검토함"은 체크가 아니다.
+   - GREEN이 될 때까지 생성 → 체크 → 수정을 반복한다.
+
+2. 엣지는 실제 데이터 흐름만
+   - 단계 사이 화살표마다 "넘어가는 변수"의 이름을 댈 수 있는지 확인한다.
+   - 이름을 댈 수 없으면 엣지가 아니다 → 병렬로 실행한다.
+   - 병렬 작업은 서브에이전트로, 각자 독립된 컨텍스트에서 돌린다.
+
+3. 코드로 할 일은 코드로
+   - 병합·정렬·중복 제거·전후 비교처럼 정답이 하나인 변환은 모델 대신 스크립트로 처리한다.
+   - "판단/결정/평가/요약" 없이 설명되는 단계는 코드다.
+
+4. 분할은 blast radius 기준
+   - 폴더가 아니라 영향 범위 기준으로 작업을 자른다.
+
+5. 실패한 단위만 되돌린다
+   - 배치 전체를 다시 쓰지 말고, 실패한 단위만 아래 형식으로 재시도한다.
+     UNIT / VERDICT / REASON / EVIDENCE / SCOPE
+   - SCOPE 밖의 파일은 건드리지 않는다.
+   - 최대 3회. 3번 실패하면 멈추고 분할 계획을 다시 제안한 뒤 나에게 보고한다.
+
+6. 게이트는 영향 범위로
+   - 되돌리기 쉽고 국소적 (문구, 테스트, 커버리지 있는 독립 함수) → 자동 진행
+   - 되돌리기 쉽지만 넓음 (공용 유틸, 스키마 추가, 호출처 많은 코드) → 결정적 체크 통과 + 깔끔한 실행 이력일 때만
+   - 되돌리기 어려움 (마이그레이션, 삭제, 프로덕션 데이터, 돈 이동) → 점수와 무관하게 실행 전 멈추고 승인 요청
+   - 판단 근거 우선순위: 결정적 결과 → 이번 실행 경로 → 과거 롤백 빈도 → 자기평가(마지막)
+
+7. 배운 것은 남긴다
+   - 통과된 결과에서 확정된 제약은 아래 "Learned constraints"에 한 줄씩 추가하고, 이후 작업 분할 시 반드시 반영한다.
+
+## Learned constraints
+- (예) adapters는 keyword args를 정확히 보존한다
+</pre>
+    </div>
+
+    <div class="panel tk" id="p2">
+      <div class="tk-head"><div><h3>작업 시작 프롬프트</h3><p class="muted" style="font-size:15px">새 작업을 맡길 때 첫 메시지로 보내요. 에이전트가 GREEN 조건과 그래프부터 그리게 해요.</p></div><button class="copy" data-copy="tpl-start">복사</button></div>
+<pre class="code" id="tpl-start">작업: &lt;여기에 할 일&gt;
+
+코드를 쓰기 전에 아래 5가지를 먼저 보여줘. 내가 확인하면 시작해.
+
+1. GREEN 조건
+   프로그램이 판정할 수 있는 완료 조건 3~5개.
+   (예: `npm test` exit 0 / diff가 아래 파일 목록만 변경 / 모든 주장에 파일:라인 출처)
+   "괜찮아 보임", "에러 없음" 같은 건 쓰지 마.
+
+2. 분할 (Splitter)
+   작업 단위 목록. 폴더가 아니라 blast radius 기준으로 나누고,
+   각 단위에 [국소 / 넓음 / 되돌리기 어려움] 표시.
+
+3. 엣지
+   단위 사이 화살표마다 넘어가는 변수 이름.
+   이름이 없으면 "병렬"로 표시하고 서브에이전트로 따로 돌릴 것.
+
+4. 코드 노드
+   병합·정렬·중복 제거·비교처럼 스크립트로 처리할 단계.
+
+5. 승인 지점
+   내가 승인해야 하는 단 하나의 단계 (되돌리기 가장 어렵고 영향이 가장 큰 것).
+   그 외 단계는 GREEN이면 묻지 말고 진행.
+</pre>
+    </div>
+
+    <div class="panel tk" id="p3">
+      <div class="tk-head"><div><h3>반려 / 재시도 템플릿</h3><p class="muted" style="font-size:15px">에이전트 결과가 실패했을 때 그대로 채워서 보내요. 서브에이전트에게 지시할 때도 같아요.</p></div><button class="copy" data-copy="tpl-return">복사</button></div>
+<pre class="code" id="tpl-return">UNIT      &lt;실패한 단위 하나. 예: handlers slice&gt;
+VERDICT   red
+REASON    &lt;실패한 체크. 예: test_auth_redirect failed&gt;
+EVIDENCE  &lt;기대값 vs 실제값, 파일:라인. 예: expected 302, got 200, handlers/auth.py:88&gt;
+SCOPE     이 파일만 수정할 것. 다른 단위는 건드리지 말 것.
+ATTEMPT   &lt;n&gt; / 3
+
+규칙: 3회째도 실패하면 더 고치지 말고 멈춰.
+대신 분할 계획의 어디가 잘못됐는지 정리해서 보고해줘.
+통과하면 이번 수정에서 확정된 제약을 한 줄로 뽑아서 CLAUDE.md "Learned constraints"에 추가해줘.
+</pre>
+    </div>
+
+    <div class="panel tk" id="p4">
+      <div class="tk-head"><div><h3>지금 파이프라인 점검</h3><p class="muted" style="font-size:15px">체크 상태는 이 브라우저에 저장돼요.</p></div><button class="copy" data-copy="cl-md">마크다운 복사</button></div>
+      <div class="cl-meta"><div class="cl-bar"><i id="clBar"></i></div><span id="clCount" class="muted" style="font-size:14px">0 / 0</span><button class="linkbtn" id="clReset">초기화</button></div>
+      <ul class="check-list" id="checklist"></ul>
+      <pre id="cl-md" hidden></pre>
+    </div>
+  </div>
+</section>
+
+<!-- 10 BUILD ORDER -->
+<section class="alt" id="build">
+  <div class="wrap">
+    <p class="eyebrow p reveal">09 · 적용 순서</p>
+    <h2 class="reveal">내일 아침,<br>이 순서로 시작하세요.</h2>
+    <p class="lead reveal">반복하는 작업 하나를 골라 splitter, 레인, merge, 게이트 하나, 되돌림 엣지 하나를 그려요. 그다음 이 순서로 만들어요.</p>
+    <div class="steps">
+      <div class="step reveal"><div class="dot">1</div><div><h3>게이트 먼저</h3><p>무엇이 GREEN인지, 어떤 레인은 자동이고 어떤 레인은 사람이 보는지부터 정해요.</p></div></div>
+      <div class="step reveal"><div class="dot">2</div><div><h3>레인 나누기</h3><p>blast radius 기준으로 자르고, 넘어가는 변수가 없는 단계는 병렬 레인으로 분리해요.</p></div></div>
+      <div class="step reveal"><div class="dot">3</div><div><h3>learning edge는 마지막</h3><p>통과된 결과가 쌓여야 제약을 뽑을 수 있어요. 쌓이면 splitter 브리프(CLAUDE.md)에 넣어요.</p></div></div>
+      <div class="step reveal"><div class="dot">4</div><div><h3>사람은 한 지점에만</h3><p>merge 승인, 또는 어떤 수정을 배포할지 고르는 것. 그거 하나만 해요.</p></div></div>
+    </div>
+    <div class="closing">
+      <p class="reveal">체크를 먼저 쓰세요.</p>
+      <p class="reveal d1">넘어가는 변수가 없으면, 엣지도 없어요.</p>
+      <p class="reveal d2"><span class="grad">사람은 마지막 한 단계만.</span></p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    원문: Hanako (@hanakoxbt), “Loops and Graphs” · <a href="https://x.com/hanakoxbt/status/2091515787366306154" target="_blank" rel="noopener">x.com/hanakoxbt/status/2091515787366306154</a><br>
+    이 페이지는 원문을 실무용으로 한국어 요약·재구성한 것이에요. 템플릿은 원문의 예시를 바탕으로 만들었어요.
+  </div>
+</footer>
+<div class="toast" id="toast">복사했어요</div>
+<script>
+(function(){
+'use strict';
+var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var $ = function(s,r){return (r||document).querySelector(s);};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+var SVGNS = 'http://www.w3.org/2000/svg';
+
+/* ---------- reveal ---------- */
+var revealEls = $$('.reveal, .lane, #prio');
+if ('IntersectionObserver' in window && !RM){
+  var ro = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (e.isIntersecting){
+        e.target.classList.add('in');
+        if (e.target.classList.contains('lane')) e.target.classList.add('in-view');
+        ro.unobserve(e.target);
+      }
+    });
+  },{threshold:.15, rootMargin:'0px 0px -40px 0px'});
+  revealEls.forEach(function(el){ro.observe(el);});
+} else {
+  revealEls.forEach(function(el){el.classList.add('in','in-view');});
+}
+
+/* ---------- nav active + progress ---------- */
+var navLinks = $$('#secNav a');
+var sections = navLinks.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));});
+var prog = $('#progress');
+function onScroll(){
+  var h = document.documentElement;
+  var max = h.scrollHeight - h.clientHeight;
+  prog.style.width = (max>0 ? (h.scrollTop||document.body.scrollTop)/max*100 : 0) + '%';
+  var y = window.innerHeight*0.35, cur = -1;
+  sections.forEach(function(s,i){ if (s && s.getBoundingClientRect().top <= y) cur = i; });
+  navLinks.forEach(function(a,i){
+    var on = i===cur;
+    if (on !== a.classList.contains('active')){
+      a.classList.toggle('active', on);
+      if (on && a.scrollIntoView){
+        var nav = a.parentNode;
+        nav.scrollTo({left: a.offsetLeft - nav.clientWidth/2 + a.clientWidth/2, behavior: RM?'auto':'smooth'});
+      }
+    }
+  });
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+function whenVisible(el, onIn, onOut){
+  if (!('IntersectionObserver' in window)){ onIn(); return; }
+  new IntersectionObserver(function(es){
+    es.forEach(function(e){ e.isIntersecting ? onIn() : (onOut && onOut()); });
+  },{threshold:.25}).observe(el);
+}
+
+/* ---------- 1. Loop ---------- */
+(function(){
+  var svg = $('#loopSvg'); if (!svg) return;
+  var dot = $('#loopDot'), ring = $('#ringP'), center = $('#loopCenter'), status = $('#loopStatus');
+  var st = {P:$('#stP'), C:$('#stC'), F:$('#stF'), R:$('#stR')};
+  var CX=260, CY=220, R=160, LEN=2*Math.PI*R;
+  var phases = [
+    {d:1300, a0:0,   a1:90,  check:null},
+    {d:1300, a0:90,  a1:90,  check:'red'},
+    {d:3600, a0:90,  a1:450, check:null},
+    {d:2200, a0:450, a1:450, check:'green'}
+  ];
+  var total = phases.reduce(function(s,p){return s+p.d;},0);
+  var raf=null, t0=null, lastCheck='';
+  function ease(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
+  function setCheck(c){
+    if (c===lastCheck) return; lastCheck=c;
+    st.C.classList.remove('red','green');
+    status.classList.remove('red','green');
+    if (c==='red'){ st.C.classList.add('red'); status.classList.add('red'); center.textContent='RED'; center.style.fill='#ff453a'; status.textContent='$ npm test → exit 1 · 1 failed'; }
+    else if (c==='green'){ st.C.classList.add('green'); status.classList.add('green'); center.textContent='GREEN'; center.style.fill='#30d158'; status.textContent='$ npm test → exit 0 · all passed'; }
+    else if (c==='fix'){ center.textContent='수정 중'; center.style.fill='#f5f5f7'; status.textContent='$ 실패한 테스트만 고치는 중…'; st.C.classList.add('red'); }
+    else { center.textContent='생성 중'; center.style.fill='#f5f5f7'; status.textContent='$ npm test → 대기'; }
+  }
+  function draw(a){
+    var rad = a*Math.PI/180;
+    dot.setAttribute('cx', CX + R*Math.sin(rad));
+    dot.setAttribute('cy', CY - R*Math.cos(rad));
+    var frac = a<=360 ? a/360 : 1;
+    ring.setAttribute('stroke-dasharray', (LEN*frac)+' '+LEN);
+    var m = ((a%360)+360)%360;
+    function near(x){var d=Math.abs(m-x); return Math.min(d,360-d)<14;}
+    st.P.classList.toggle('on', near(0)); st.C.classList.toggle('on', near(90));
+    st.F.classList.toggle('on', near(180)); st.R.classList.toggle('on', near(270));
+  }
+  function frame(ts){
+    if (t0===null) t0=ts;
+    var t=(ts-t0)%total, acc=0, i=0;
+    while (i<phases.length && t>acc+phases[i].d){acc+=phases[i].d;i++;}
+    var p=phases[Math.min(i,phases.length-1)], k=ease(Math.min(1,(t-acc)/p.d));
+    var a = p.a0+(p.a1-p.a0)*k;
+    draw(a);
+    if (p.check) setCheck(p.check);
+    else if (i===2) setCheck('fix');
+    else setCheck('');
+    raf=requestAnimationFrame(frame);
+  }
+  if (RM){ draw(90); setCheck('green'); return; }
+  draw(0);
+  whenVisible(svg, function(){ if(!raf){ t0=null; raf=requestAnimationFrame(frame);} },
+                   function(){ if(raf){ cancelAnimationFrame(raf); raf=null; } });
+})();
+
+/* ---------- 2. DAG ---------- */
+(function(){
+  var svg = $('#dagSvg'); if (!svg) return;
+  var W=96, H=58;
+  var nodes = {
+    S:{t:'Splitter', s:'분할', c:'#ff9f0a'},
+    U:{t:'utils', s:'Worker', c:'#2997ff'},
+    H:{t:'handlers', s:'Worker', c:'#2997ff'},
+    A:{t:'adapters', s:'Worker', c:'#2997ff'},
+    M:{t:'Merge', s:'Code', c:'#30d158'},
+    G:{t:'Gate', s:'관문', c:'#bf5af2'}
+  };
+  var lin = {S:[60,160],U:[192,160],H:[324,160],A:[456,160],M:[588,160],G:[720,160]};
+  var par = {S:[70,160],U:[300,60],H:[300,160],A:[300,260],M:[540,160],G:[710,160]};
+  var edges = [
+    ['S','U','slice'],['U','H',''],['H','A',''],['A','M','diff'],['M','G','merged'],
+    ['S','H','slice'],['S','A','slice'],['U','M','diff'],['H','M','diff']
+  ];
+  var vis = [
+    {SU:1,UH:1,HA:1,AM:1,MG:1},
+    {SU:1,UH:1,HA:1,AM:1,MG:1},
+    {SU:1,SH:1,SA:1,UM:1,HM:1,AM:1,MG:1}
+  ];
+  var defs = document.createElementNS(SVGNS,'defs');
+  defs.innerHTML = '<marker id="dArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#86868b"/></marker>'+
+                   '<marker id="dArrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ff453a"/></marker>';
+  svg.appendChild(defs);
+  var eEls = {}, lEls = {}, vEls = {};
+  edges.forEach(function(e){
+    var k=e[0]+e[1];
+    var p=document.createElementNS(SVGNS,'path'); p.setAttribute('class','edge'); p.setAttribute('marker-end','url(#dArr)');
+    svg.appendChild(p); eEls[k]=p;
+    if (k==='UH'||k==='HA'){
+      var l=document.createElementNS(SVGNS,'text'); l.setAttribute('class','elabel'); l.textContent='그리고 나서?'; l.style.opacity=0;
+      svg.appendChild(l); lEls[k]=l;
+    }
+    if (e[2]){
+      var v=document.createElementNS(SVGNS,'text'); v.setAttribute('class','vlabel'); v.textContent=e[2]; v.style.opacity=0;
+      svg.appendChild(v); vEls[k]=v;
+    }
+  });
+  var nEls = {};
+  Object.keys(nodes).forEach(function(k){
+    var n=nodes[k], g=document.createElementNS(SVGNS,'g');
+    g.innerHTML='<rect class="n-rect" x="'+(-W/2)+'" y="'+(-H/2)+'" width="'+W+'" height="'+H+'" rx="14" style="stroke:'+n.c+';stroke-width:2"></rect>'+
+      '<text class="n-txt" y="-7" style="font-size:14px">'+n.t+'</text><text class="n-sub" y="13" style="fill:'+n.c+'">'+n.s+'</text>';
+    svg.appendChild(g); nEls[k]=g;
+  });
+  var pos = JSON.parse(JSON.stringify(lin)), state=0, anim=null;
+  function render(){
+    Object.keys(nEls).forEach(function(k){ nEls[k].setAttribute('transform','translate('+pos[k][0]+' '+pos[k][1]+')'); });
+    edges.forEach(function(e){
+      var k=e[0]+e[1], a=pos[e[0]], b=pos[e[1]];
+      var x1=a[0]+W/2, y1=a[1], x2=b[0]-W/2-4, y2=b[1], mx=(x1+x2)/2;
+      eEls[k].setAttribute('d','M'+x1+' '+y1+' C'+mx+' '+y1+' '+mx+' '+y2+' '+x2+' '+y2);
+      if (lEls[k]){ lEls[k].setAttribute('x',(x1+x2)/2); lEls[k].setAttribute('y',y1-40); }
+      if (vEls[k]){
+        var vx=(x1+x2)/2, vy=(y1+y2)/2 - 8;
+        if (state===2 && (k==='SU'||k==='SA'||k==='UM'||k==='AM')) vy = (y1+y2)/2 + ((y2<y1)===(k==='SU'||k==='AM') ? -14 : 18);
+        vEls[k].setAttribute('x',vx); vEls[k].setAttribute('y',vy);
+      }
+    });
+  }
+  function applyStyles(){
+    edges.forEach(function(e){
+      var k=e[0]+e[1], on=!!vis[state][k], fake=state===1&&(k==='UH'||k==='HA');
+      eEls[k].style.opacity = on?1:0;
+      eEls[k].classList.toggle('fake', fake);
+      eEls[k].setAttribute('marker-end', fake?'url(#dArrR)':'url(#dArr)');
+      if (lEls[k]) lEls[k].style.opacity = fake?1:0;
+      if (vEls[k]) vEls[k].style.opacity = (on && state>=1) ? 1 : 0;
+    });
+    var tb=$('#timeBar'), tt=$('#timeTxt');
+    if (state===2){ tb.style.width='38%'; tt.textContent='워커 3개가 동시에 돌아요: 1 단위 시간'; }
+    else if (state===1){ tb.style.width='100%'; tt.textContent='utils → handlers, handlers → adapters 사이로 넘어가는 변수가 없어요'; }
+    else { tb.style.width='100%'; tt.textContent='워커 3개가 차례로 돌아요: 3 단위 시간'; }
+  }
+  function go(s){
+    state=s; applyStyles();
+    var target = s===2?par:lin, from=JSON.parse(JSON.stringify(pos));
+    if (anim) cancelAnimationFrame(anim);
+    if (RM){ pos=JSON.parse(JSON.stringify(target)); render(); return; }
+    var t0=null, D=900;
+    function f(ts){
+      if(t0===null)t0=ts; var k=Math.min(1,(ts-t0)/D); k=1-Math.pow(1-k,3);
+      Object.keys(pos).forEach(function(n){ pos[n]=[from[n][0]+(target[n][0]-from[n][0])*k, from[n][1]+(target[n][1]-from[n][1])*k]; });
+      render(); if(k<1) anim=requestAnimationFrame(f);
+    }
+    anim=requestAnimationFrame(f);
+  }
+  render(); applyStyles();
+  var btns=$$('[data-dag]');
+  btns.forEach(function(b){ b.addEventListener('click',function(){
+    btns.forEach(function(x){x.classList.toggle('on',x===b);});
+    go(+b.getAttribute('data-dag')); auto=false;
+  });});
+  // auto-advance once when first seen
+  var auto=true, played=false;
+  whenVisible(svg,function(){
+    if (played||RM) return; played=true;
+    setTimeout(function(){ if(auto){ btns[1].click(); auto=true; } },1400);
+    setTimeout(function(){ if(auto){ btns[2].click(); } },3600);
+  });
+})();
+
+/* ---------- 3. slices ---------- */
+(function(){
+  var box=$('#slices'); if(!box) return;
+  var sl=$$('.slice',box), dots=$$('#attempts i'), txt=$('#attTxt');
+  var timers=[], running=false;
+  function at(ms,fn){timers.push(setTimeout(fn,ms));}
+  function reset(){ sl.forEach(function(s){s.classList.remove('go','red','green');}); dots.forEach(function(d){d.classList.remove('on');}); txt.textContent='0 / 3'; }
+  function cycle(){
+    reset();
+    at(600,function(){ sl.forEach(function(s){s.classList.add('go');}); });
+    at(1800,function(){ sl.forEach(function(s,i){ s.classList.add(i===1?'red':'green'); }); });
+    at(3000,function(){ sl[1].classList.remove('go'); });
+    at(3900,function(){ dots[0].classList.add('on'); txt.textContent='1 / 3'; sl[1].classList.remove('red'); });
+    at(4700,function(){ sl[1].classList.add('go'); });
+    at(5800,function(){ sl[1].classList.add('green'); });
+    at(8500,function(){ if(running) cycle(); });
+  }
+  if (RM){ sl.forEach(function(s,i){s.classList.add('go','green');}); dots[0].classList.add('on'); txt.textContent='1 / 3 · handlers만 재시도 후 통과'; return; }
+  whenVisible(box,function(){ if(!running){running=true;cycle();} },function(){ running=false; timers.forEach(clearTimeout); timers=[]; reset(); });
+})();
+
+/* ---------- tabs ---------- */
+var tabs=$$('[data-tab]');
+tabs.forEach(function(b){ b.addEventListener('click',function(){
+  tabs.forEach(function(x){x.classList.toggle('on',x===b);});
+  $$('.panel').forEach(function(p){p.classList.toggle('on',p.id===b.getAttribute('data-tab'));});
+});});
+
+/* ---------- checklist ---------- */
+var ITEMS=[
+  ['모든 단계에 프로그램이 판정하는 GREEN 조건이 있다','“괜찮아 보임 / 자신 있음 / 에러 없음”은 제외'],
+  ['“다른 모델에게 검토 요청”만으로 된 체크가 없다','낙관론자 둘의 합의는 체크가 아니에요'],
+  ['체크가 작업보다 먼저 쓰여 있다',''],
+  ['모든 화살표에 넘어가는 변수 이름을 댈 수 있다','못 대면 그 엣지를 지우고 병렬로'],
+  ['워커들이 컨텍스트를 공유하지 않는다','서브에이전트마다 독립 컨텍스트'],
+  ['정답이 하나인 변환(병합·정렬·중복 제거·diff)은 코드가 한다','“판단/결정/평가/요약” 없이 설명되면 코드'],
+  ['splitter가 폴더가 아니라 blast radius 기준으로 자른다',''],
+  ['실패하면 배치 전체가 아니라 실패한 단위만 되돌린다',''],
+  ['되돌림 메시지에 UNIT / VERDICT / REASON / EVIDENCE / SCOPE가 다 있다','SCOPE가 없으면 diff가 번져요'],
+  ['재시도 상한(3회)과, 넘으면 사람에게 올리는 경로가 있다','3회 실패 = 계획 문제'],
+  ['되돌리기 어려운 작업(마이그레이션·삭제·프로덕션 데이터·돈)은 점수와 무관하게 사람 승인이다',''],
+  ['게이트 근거 순서가 결정적 결과 → 실행 경로 → 롤백 이력 → 자기평가다',''],
+  ['통과 결과에서 제약을 뽑아 splitter 브리프에 넣는 learning edge가 있다','CLAUDE.md “Learned constraints”'],
+  ['사람이 보는 지점은 딱 하나다','merge 승인 또는 배포할 수정 선택']
+];
+var KEY='loopsGraphs.checklist.v1', saved={};
+try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ saved={}; }
+var ul=$('#checklist');
+ITEMS.forEach(function(it,i){
+  var li=document.createElement('li');
+  li.innerHTML='<label><input type="checkbox" data-i="'+i+'"'+(saved[i]?' checked':'')+'><span>'+it[0]+(it[1]?'<small>'+it[1]+'</small>':'')+'</span></label>';
+  ul.appendChild(li);
+});
+function updCl(){
+  var boxes=$$('input',ul), n=0, md=['## 파이프라인 점검 (Loops & Graphs)'];
+  boxes.forEach(function(b,i){ if(b.checked)n++; md.push('- ['+(b.checked?'x':' ')+'] '+ITEMS[i][0]); });
+  $('#clBar').style.width=(n/boxes.length*100)+'%';
+  $('#clCount').textContent=n+' / '+boxes.length+(n===boxes.length?' · 완벽해요':'');
+  $('#cl-md').textContent=md.join('\n');
+}
+ul.addEventListener('change',function(e){
+  var i=e.target.getAttribute('data-i'); if(i===null)return;
+  saved[i]=e.target.checked; try{localStorage.setItem(KEY,JSON.stringify(saved));}catch(err){}
+  updCl();
+});
+$('#clReset').addEventListener('click',function(){
+  saved={}; try{localStorage.removeItem(KEY);}catch(e){}
+  $$('input',ul).forEach(function(b){b.checked=false;}); updCl();
+});
+updCl();
+
+/* ---------- copy ---------- */
+var toast=$('#toast'), tt;
+function showToast(m){ toast.textContent=m; toast.classList.add('show'); clearTimeout(tt); tt=setTimeout(function(){toast.classList.remove('show');},1600); }
+function fallbackCopy(text){
+  var ta=document.createElement('textarea'); ta.value=text; ta.setAttribute('readonly','');
+  ta.style.position='fixed'; ta.style.top='-1000px'; document.body.appendChild(ta);
+  ta.select(); ta.setSelectionRange(0, text.length);
+  var ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta); return ok;
+}
+$$('[data-copy]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var el=document.getElementById(b.getAttribute('data-copy')); if(!el)return;
+    var text=el.textContent.replace(/\s+$/,'')+'\n';
+    function done(ok){
+      if(!ok){ showToast('복사가 안 됐어요. 길게 눌러 선택해 주세요'); return; }
+      var o=b.textContent; b.textContent='복사됨 ✓'; b.classList.add('done'); showToast('클립보드에 복사했어요');
+      setTimeout(function(){ b.textContent=o; b.classList.remove('done'); },1600);
+    }
+    if (navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(function(){done(true);},function(){done(fallbackCopy(text));});
+    } else done(fallbackCopy(text));
+  });
+});
+})();
+</script>
+</body>
+</html>
