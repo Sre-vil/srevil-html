@@ -1,0 +1,62 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><title>HTML 갤러리</title><style>
+:root{--bg:#f5f5f7;--card:#ffffff;--text:#1d1d1f;--sub:#6e6e73;--line:rgba(0,0,0,.08);
+--accent:#0071e3;--hdr:rgba(245,245,247,.72);--shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--text:#f5f5f7;--sub:#98989d;
+--line:rgba(255,255,255,.1);--accent:#2997ff;--hdr:rgba(22,22,23,.72);--shadow:0 1px 2px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Apple SD Gothic Neo","Helvetica Neue",system-ui,sans-serif;
+line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+header{position:sticky;top:0;z-index:10;background:var(--hdr);
+-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+border-bottom:1px solid var(--line)}
+.bar{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px}
+.brand{font-weight:600;font-size:17px;letter-spacing:-.01em}
+.badge{font-size:12px;font-weight:500;padding:3px 9px;border-radius:999px;background:rgba(52,199,89,.14);color:#248a3d}
+@media (prefers-color-scheme:dark){.badge{color:#30d158}}
+nav{margin-left:auto;display:flex;gap:18px;font-size:14px;color:var(--sub)}
+nav a:hover{color:var(--text)}
+main{max-width:1080px;margin:0 auto;padding:40px 20px 80px}
+h1{font-size:34px;line-height:1.15;letter-spacing:-.025em;margin:0 0 6px;font-weight:700}
+.lead{color:var(--sub);margin:0 0 36px;font-size:17px}
+h2{font-size:22px;letter-spacing:-.015em;margin:44px 0 16px;display:flex;align-items:baseline;gap:10px}
+h2 small{font-size:14px;color:var(--sub);font-weight:400}
+h2 a.more{margin-left:auto;font-size:14px;font-weight:400;color:var(--accent)}
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:960px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{display:flex;flex-direction:column;gap:8px;background:var(--card);border-radius:18px;padding:22px;
+box-shadow:var(--shadow);border:1px solid var(--line);transition:transform .2s ease,box-shadow .2s ease;opacity:1}
+.card:hover{transform:translateY(-2px)}
+.card .t{font-size:17px;font-weight:600;letter-spacing:-.01em;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
+.card .f{font-size:13px;color:var(--sub);font-family:ui-monospace,"SF Mono",Menlo,monospace;overflow-wrap:anywhere}
+.card .m{margin-top:auto;padding-top:8px;font-size:13px;color:var(--sub);display:flex;gap:12px}
+.dir .t::before{content:"📁 "}
+.empty{color:var(--sub);padding:28px;border:1px dashed var(--line);border-radius:18px;text-align:center}
+.tsbanner{max-width:1080px;margin:16px auto 0;padding:0 20px}
+.tsbanner div{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;letter-spacing:-.01em;color:#fff;background:linear-gradient(135deg,#5e5ce6,#bf5af2);box-shadow:0 4px 14px rgba(94,92,230,.25)}
+.card.ph{border-style:dashed;box-shadow:none;background:transparent;align-items:center;justify-content:center;min-height:120px}
+.card.ph .t{color:var(--sub);font-weight:500}
+.crumbs{font-size:14px;color:var(--sub);margin-bottom:10px}
+.crumbs a{color:var(--accent)}
+footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--sub);font-size:12px}
+@media (prefers-reduced-motion:no-preference){
+.card{animation:rise .45s ease-out}
+@keyframes rise{from{opacity:.001;transform:translateY(6px)}to{opacity:1;transform:none}}}
+</style><script>
+(function(){try{
+if(new URLSearchParams(location.search).get("stay")==="1")return;
+if(!window.fetch||!window.AbortController)return;
+var B="https://srv-a1.tail40e7d4.ts.net:8444",c=new AbortController(),t=setTimeout(function(){c.abort()},1500);
+fetch(B+"/ping",{mode:"cors",cache:"no-store",signal:c.signal})
+.then(function(r){if(!r.ok)throw 0;return r.json()})
+.then(function(j){clearTimeout(t);if(!j||j.ok!==true)return;
+var p=location.pathname;
+if(/\.github\.io$/.test(location.hostname))p=p.replace(/^\/srevil-html(?=\/|$)/,"");
+p=p.replace(/\/index\.html$/,"/")||"/";
+location.replace(B+p+location.search+location.hash)})
+.catch(function(){clearTimeout(t)})
+}catch(e){}})();
+</script></head><body><header><div class="bar"><a class="brand" href="../gallery/">HTML 갤러리</a><nav><a href="../">← 홈</a><a href="../gallery/">갤러리</a><a href="../public/">모든 파일</a></nav></div></header><main><h1>HTML 갤러리</h1><p class="lead">공유된 문서 모음 · 최신순</p><h2>전체 <small>1개</small><a class="more" href="../public/">폴더 보기</a></h2><div class="grid"><a class="card" href="../public/loops-and-graphs-agent-guide.html"><div class="t">Loops &amp; Graphs: 마지막 한 단계만 승인하기</div><div class="f">loops-and-graphs-agent-guide.html</div><div class="m"><span>64.7 KB</span><span>2026. 11. 23. 00:48</span></div></a></div></main><footer>srevil · 최신순 정렬</footer></body></html>
