@@ -48,15 +48,21 @@ footer{max-width:1080px;margin:0 auto;padding:0 20px 40px;color:var(--sub);font-
 </style><script>
 (function(){try{
 if(new URLSearchParams(location.search).get("stay")==="1")return;
-if(!window.fetch||!window.AbortController)return;
-var B="https://srv-a1.tail40e7d4.ts.net:8444",c=new AbortController(),t=setTimeout(function(){c.abort()},1500);
-fetch(B+"/ping",{mode:"cors",cache:"no-store",signal:c.signal})
+if(!window.fetch||!window.AbortController||!window.Promise)return;
+var B="https://srv-a1.tail40e7d4.ts.net:8443",busy=false,last=-1e15;
+function once(){var c=new AbortController(),t=setTimeout(function(){c.abort()},4000);
+return fetch(B+"/ping",{mode:"cors",cache:"no-store",credentials:"omit",signal:c.signal})
 .then(function(r){if(!r.ok)throw 0;return r.json()})
-.then(function(j){clearTimeout(t);if(!j||j.ok!==true)return;
-var p=location.pathname;
+.then(function(j){clearTimeout(t);return !!j&&j.ok===true},function(e){clearTimeout(t);throw e})}
+function go(){var p=location.pathname;
 if(/\.github\.io$/.test(location.hostname))p=p.replace(/^\/srevil-html(?=\/|$)/,"");
 p=p.replace(/\/index\.html$/,"/")||"/";
-location.replace(B+p+location.search+location.hash)})
-.catch(function(){clearTimeout(t)})
+location.replace(B+p+location.search+location.hash)}
+function probe(){var n=Date.now();if(busy||n-last<30000)return;busy=true;last=n;
+once().catch(function(){return new Promise(function(r){setTimeout(r,800)}).then(once)})
+.then(function(ok){busy=false;if(ok)go()},function(){busy=false})}
+probe();
+addEventListener("pageshow",function(e){if(e.persisted)probe()});
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")probe()});
 }catch(e){}})();
 </script></head><body><header><div class="bar"><a class="brand" href="../gallery/">HTML 갤러리</a><nav><a href="../">← 홈</a><a href="../gallery/">갤러리</a><a href="../public/">모든 파일</a></nav></div></header><main><h1>HTML 갤러리</h1><p class="lead">공유된 문서 모음 · 최신순</p><h2>전체 <small>1개</small><a class="more" href="../public/">폴더 보기</a></h2><div class="grid"><a class="card" href="../public/loops-and-graphs-agent-guide.html"><div class="t">Loops &amp; Graphs: 마지막 한 단계만 승인하기</div><div class="f">loops-and-graphs-agent-guide.html</div><div class="m"><span>64.7 KB</span><span>2026. 11. 23. 00:48</span></div></a></div></main><footer>srevil · 최신순 정렬</footer></body></html>
